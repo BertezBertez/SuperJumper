@@ -42,13 +42,13 @@ public class CharacterMovment : MonoBehaviour {
 		CharacterController controller = GetComponent<CharacterController>();
 
 		moveDirection = new Vector3(0F,0f,0F);
-		//set vector for how object will move this from
+		//setting vector for how object will move this frame based on input
 		if(Input.GetKey(KeyCode.W)){
 			//controller.Move ( transform.forward * Time.deltaTime);
 			moveDirection= moveDirection + ( transform.forward * Time.deltaTime);
 		}
 		
-		
+		//starts countdown untill camera changes and gets ready to rotate
 		if(Input.GetKeyDown(KeyCode.S)){
 			moveStartTime=Time.time;
 			rotated=false;
@@ -57,10 +57,12 @@ public class CharacterMovment : MonoBehaviour {
 		if(Input.GetKey(KeyCode.S)){
 			if((Time.time-moveStartTime)>moveTimeToRotate){
 				transform.Rotate(Vector3.up, 180);
+				//player rotation only effects the camera
 				moveStartTime=Time.time;
 				rotated=true;
 			}
 			if (rotated){
+				//since forward is the direction player is going button now pushes player forward
 				moveDirection= moveDirection + ( transform.forward * Time.deltaTime);
 				moveStartTime=Time.time;
 			}
@@ -69,7 +71,7 @@ public class CharacterMovment : MonoBehaviour {
 			}
 		}
 		
-		
+		//repeat for other keys
 		if(Input.GetKeyDown(KeyCode.D)){
 			moveStartTime=Time.time;
 			rotated=false;
@@ -118,27 +120,34 @@ public class CharacterMovment : MonoBehaviour {
 
 
 		if (controller.isGrounded) {
+			jumpVector = new Vector3(0F,0F,0F);
 			hasJumped = false;
+			//space starts jump
 			if(Input.GetKey(KeyCode.Space)){
 				jumpVector = new Vector3(0F,jumpSpeed,0F);
 				controller.Move ( jumpVector *Time.deltaTime);
 				hasJumped= true;
 				jumpTime= Time.time;
 			}
+			//add speed to the whole thing
 			moveDirection.z *= speed;
 			moveDirection.x *= speed;
 		} else {
+			//give the player a little air control
 			moveDirection.z *= speed*0.75f;
 			moveDirection.x *= speed*0.75f;
 		}
 
 
 		if ((Time.time - jumpTime) > 5) {
+			//occaisionally a jump will hit a surface but isgrounded() won't trigger causeing player to fly away
+			//This timer is a safe guard against that 
 			hasJumped = false;
 			jumpVector = new Vector3(0F,0F,0F);
 		}
 
 		if (hasJumped) {
+			//adds height to diminishing degrees
 			controller.Move (jumpVector * Time.deltaTime);
 			jumpVector.y = jumpVector.y-(5 * Time.deltaTime);
 		}
@@ -151,7 +160,7 @@ public class CharacterMovment : MonoBehaviour {
 		target.position = Vector3.MoveTowards(target.position, cameraPosition, cameraSpeed*Time.deltaTime);
 		// finds vector between camera and player
 		cameraDirection = (transform.position - target.position).normalized;
-		//puts vector into a type that the rotation variable is 
+		//puts vector into the format that the rotation variable is and turns camera towards player.
 		target.rotation =  Quaternion.LookRotation(cameraDirection);
 
 		controller.Move ( moveDirection + jumpVector ); 
